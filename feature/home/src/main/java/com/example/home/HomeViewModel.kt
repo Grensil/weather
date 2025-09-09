@@ -2,21 +2,19 @@ package com.example.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.domain.ArticleDto
 import com.example.domain.MainUseCase
-import com.example.domain.WeatherDto
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.shareIn
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class HomeViewModel(private val useCase: MainUseCase) : ViewModel() {
 
-    val weatherList = useCase.getWeatherList().shareIn(
-        scope = viewModelScope,
-        started = SharingStarted.Companion.Eagerly,
-        replay = 1
-    )
+    private val _articles = MutableStateFlow<List<ArticleDto>>(emptyList())
+    val articles = _articles.asStateFlow()
 
-
-    fun getSubWeatherList(region : String) : List<WeatherDto>? {
-        return useCase.getSubRegionWeatherList(region = region)
+    fun getTopHeadlines(country: String, category: String) = viewModelScope.launch {
+        val response = useCase.getTopHeadlines(country, category)
+        _articles.value = response
     }
 }
