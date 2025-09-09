@@ -1,24 +1,18 @@
 package com.example.home
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,6 +21,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.domain.MainRepository
 import com.example.domain.MainUseCase
 import com.example.domain.WeatherDto
+import com.example.home.component.WeatherItemView
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
@@ -34,10 +29,13 @@ import kotlinx.coroutines.flow.flowOf
 fun HomeScreen(viewModel: HomeViewModel) {
 
     val weatherList = viewModel.weatherList.collectAsStateWithLifecycle(initialValue = emptyList())
+    val expandedItems = rememberSaveable { mutableStateOf<Set<String>>(emptySet()) }
 
     Scaffold(
         topBar = {
-            Row(modifier = Modifier.statusBarsPadding().padding(horizontal = 16.dp)) {
+            Row(modifier = Modifier
+                .statusBarsPadding()
+                .padding(horizontal = 16.dp)) {
                 Text(
                     text = "Today's Weather",
                     fontSize = 32.sp,
@@ -55,45 +53,17 @@ fun HomeScreen(viewModel: HomeViewModel) {
                 items(weatherList.value.size) { index ->
                     val item = weatherList.value[index]
 
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(80.dp)
-                            .background(Color.Gray, shape = RoundedCornerShape(16.dp))
-                            .padding(horizontal = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-
-                        Text(
-                            text = item.region,
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-
-                        Spacer(
-                            modifier = Modifier
-                                .width(6.dp)
-                                .fillMaxHeight()
-                        )
-
-                        Text(
-                            text = item.status,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-
-                        Spacer(
-                            modifier = Modifier
-                                .width(6.dp)
-                                .fillMaxHeight()
-                        )
-
-                        Text(
-                            text =  "(${item.temperature}\u00B0C)",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Medium
-                        )
-                    }
+                    WeatherItemView(
+                        item = item,
+                        subItems = viewModel.getSubWeatherList(item.region),
+                        expanded = expandedItems.value.contains(item.region),
+                        expandOnClick = {
+                            if (expandedItems.value.contains(item.region)) {
+                                expandedItems.value = expandedItems.value - item.region
+                            } else {
+                                expandedItems.value = expandedItems.value + item.region
+                            }
+                        })
                 }
             }
         }
@@ -121,7 +91,22 @@ class FakeRepository : MainRepository {
         WeatherDto(region = "울산", status = "비", temperature = 16.7f)
     )
 
+    private val fakeSubWeatherList = mapOf(
+        "서울" to listOf(
+            WeatherDto(region = "강남구", status = "맑음", temperature = 19.2f),
+            WeatherDto(region = "강동구", status = "구름많음", temperature = 18.8f),
+            WeatherDto(region = "강서구", status = "맑음", temperature = 18.1f),
+            WeatherDto(region = "영등포구", status = "흐림", temperature = 18.9f),
+            WeatherDto(region = "마포구", status = "맑음", temperature = 19.0f),
+            WeatherDto(region = "종로구", status = "구름많음", temperature = 18.7f)
+        )
+    )
+
     override fun getWeatherList(): Flow<List<WeatherDto>> {
         return flowOf(fakeWeatherList)
+    }
+
+    override fun getSubRegionWeatherList(region: String): List<WeatherDto>? {
+        return fakeSubWeatherList[region]
     }
 }

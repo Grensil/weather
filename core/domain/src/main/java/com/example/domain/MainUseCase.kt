@@ -8,4 +8,7 @@ class MainUseCase(private val repository : MainRepository) {
         return repository.getWeatherList()
     }
 
+    fun getSubRegionWeatherList(region: String): List<WeatherDto>? {
+        return repository.getSubRegionWeatherList(region)
+    }
 }
