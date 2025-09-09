@@ -14,13 +14,16 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val appModule = MyApplication().getAppModule()
-        val viewModel: HomeViewModel = ViewModelProvider(this,
-            factory = createViewModelFactory { HomeViewModel(appModule.getUseCase()) }
-        )[HomeViewModel::class.java]
-
+//        val appModule = MyApplication().getAppModule()
+//        val viewModel: HomeViewModel = ViewModelProvider(this,
+//            factory = createViewModelFactory { HomeViewModel(appModule.getUseCase()) }
+//        )[HomeViewModel::class.java]
+//
+//        setContent {
+//            HomeScreen(viewModel)
+//        }
         setContent {
-            HomeScreen(viewModel)
+            ManScreen()
         }
     }
 }
