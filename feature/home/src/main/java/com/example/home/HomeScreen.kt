@@ -11,8 +11,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -22,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.domain.ArticleDto
 import com.example.domain.MainRepository
 import com.example.domain.MainUseCase
+import com.example.home.component.ArticleItem
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
@@ -52,10 +51,8 @@ fun HomeScreen(viewModel: HomeViewModel) {
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             items(articles.value.size) { index ->
-                val item =articles.value[index]
-
-                Text(text = "${item.title}")
-
+                val item = articles.value[index]
+                ArticleItem(item = item)
             }
         }
     })

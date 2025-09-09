@@ -52,4 +52,6 @@ dependencies {
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     debugImplementation(libs.ui.tooling)
+
+    implementation(libs.coil.compose)
 }
