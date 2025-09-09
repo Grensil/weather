@@ -45,9 +45,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.runtime)
     implementation(libs.material3)
+    implementation(libs.ui.tooling.preview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    debugImplementation(libs.ui.tooling)
 }
