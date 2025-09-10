@@ -3,18 +3,26 @@ package com.example.data
 import com.example.data.model.Article
 import com.example.data.model.HeadlineResponse
 import com.example.data.model.Source
-import com.example.domain.ArticleDto
 import com.grensil.network.HttpClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import org.json.JSONObject
 
-class RemoteDataSource {
+
+interface RemoteDataSource {
+    fun getHeadLineArticles(country: String, category: String): Flow<HeadlineResponse>
+    fun parseHeadlineResponse(jsonString: String): HeadlineResponse
+    fun parseArticlesArray(jsonString: String): List<Article>
+    fun parseArticle(articleJson: String): Article
+    fun extractStringValue(json: String, key: String): String?
+    fun extractIntValue(json: String, key: String): Int?
+    fun extractNestedStringValue(json: String, parentKey: String, childKey: String): String?
+}
+open class RemoteDataSourceImpl : RemoteDataSource {
     private val httpClient by lazy { HttpClient() }
 
-    fun getHeadLineArticles(country: String, category: String): Flow<HeadlineResponse> = flow {
+    override fun getHeadLineArticles(country: String, category: String): Flow<HeadlineResponse> = flow {
         val url = ApiConfig.buildTopHeadlinesUrl(country, category)
 
         try {
@@ -33,7 +41,7 @@ class RemoteDataSource {
         }
     }.flowOn(Dispatchers.IO)
 
-    fun parseHeadlineResponse(jsonString: String): HeadlineResponse {
+    override fun parseHeadlineResponse(jsonString: String): HeadlineResponse {
         val status = extractStringValue(jsonString, "status") ?: ""
         val totalResults = extractIntValue(jsonString, "totalResults") ?: 0
         val articles = parseArticlesArray(jsonString)
@@ -41,7 +49,7 @@ class RemoteDataSource {
         return HeadlineResponse(status, totalResults, articles)
     }
 
-    private fun parseArticlesArray(jsonString: String): List<Article> {
+    override fun parseArticlesArray(jsonString: String): List<Article> {
         val articlesPattern = """"articles"\s*:\s*\[(.*)]""".toRegex(RegexOption.DOT_MATCHES_ALL)
         val articlesArrayContent = articlesPattern.find(jsonString)?.groupValues?.get(1) ?: return emptyList()
         
@@ -56,7 +64,7 @@ class RemoteDataSource {
         return articles
     }
 
-    private fun parseArticle(articleJson: String): Article {
+    override fun parseArticle(articleJson: String): Article {
         val sourceId = extractNestedStringValue(articleJson, "source", "id")
         val sourceName = extractNestedStringValue(articleJson, "source", "name") ?: ""
         val source = Source(id = sourceId, name = sourceName)
@@ -73,19 +81,19 @@ class RemoteDataSource {
         )
     }
 
-    private fun extractStringValue(json: String, key: String): String? {
+    override fun extractStringValue(json: String, key: String): String? {
         val pattern = """"$key"\s*:\s*"([^"]*)"""".toRegex()
         val match = pattern.find(json)
         return match?.groupValues?.get(1)?.takeIf { it.isNotEmpty() }
     }
 
-    private fun extractIntValue(json: String, key: String): Int? {
+    override fun extractIntValue(json: String, key: String): Int? {
         val pattern = """"$key"\s*:\s*(\d+)""".toRegex()
         val match = pattern.find(json)
         return match?.groupValues?.get(1)?.toIntOrNull()
     }
 
-    private fun extractNestedStringValue(json: String, parentKey: String, childKey: String): String? {
+    override fun extractNestedStringValue(json: String, parentKey: String, childKey: String): String? {
         val parentPattern = """"$parentKey"\s*:\s*\{([^}]*)\}""".toRegex()
         val parentMatch = parentPattern.find(json) ?: return null
         val parentContent = parentMatch.groupValues[1]

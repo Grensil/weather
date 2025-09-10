@@ -6,9 +6,9 @@ import kotlinx.coroutines.flow.flow
 
 class LocalDataSource {
 
-    private val favoriteArticles = mutableListOf<Source>()
+    private val favoriteArticles = mutableSetOf<Source>()
 
-    fun getFavoriteList() : Flow<List<Source>> = flow {
+    fun getFavoriteList() : Flow<Set<Source>> = flow {
         emit(favoriteArticles)
     }
 

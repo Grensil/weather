@@ -1,6 +1,5 @@
 package com.example.data
 
-import com.example.data.model.HeadlineResponse
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -9,11 +8,11 @@ import org.junit.Test
 
 class RemoteDataSourceTest {
 
-    private lateinit var remoteDataSource: RemoteDataSource
+    private lateinit var remoteDataSourceImpl: RemoteDataSourceImpl
 
     @Before
     fun setUp() {
-        remoteDataSource = RemoteDataSource()
+        remoteDataSourceImpl = RemoteDataSourceImpl()
     }
 
     @Test
@@ -55,7 +54,7 @@ class RemoteDataSourceTest {
         """.trimIndent()
 
         // When
-        val result = remoteDataSource.parseHeadlineResponse(jsonResponse)
+        val result = remoteDataSourceImpl.parseHeadlineResponse(jsonResponse)
 
         // Then
         assertEquals("ok", result.status)
@@ -93,7 +92,7 @@ class RemoteDataSourceTest {
         """.trimIndent()
 
         // When
-        val result = remoteDataSource.parseHeadlineResponse(jsonResponse)
+        val result = remoteDataSourceImpl.parseHeadlineResponse(jsonResponse)
 
         // Then
         assertEquals("ok", result.status)
@@ -120,7 +119,7 @@ class RemoteDataSourceTest {
         """.trimIndent()
 
         // When
-        val result = remoteDataSource.parseHeadlineResponse(jsonResponse)
+        val result = remoteDataSourceImpl.parseHeadlineResponse(jsonResponse)
 
         // Then
         assertEquals("", result.status) // 기본값
@@ -145,7 +144,7 @@ class RemoteDataSourceTest {
         val invalidJson = "{ invalid json }"
 
         // When
-        val result = remoteDataSource.parseHeadlineResponse(invalidJson)
+        val result = remoteDataSourceImpl.parseHeadlineResponse(invalidJson)
 
         // Then
         assertEquals("", result.status)
@@ -154,9 +153,9 @@ class RemoteDataSourceTest {
     }
 
     @Test
-    fun `정상적인_아티클_리스트가_응답된다`() = runBlocking {
+    fun `아티클_리스트_응답_테스트`() = runBlocking {
         //Given
-        val result = remoteDataSource.getHeadLineArticles(country = "us", category = "business")
+        val result = remoteDataSourceImpl.getHeadLineArticles(country = "us", category = "business")
 
         println("result : ${result.first()}")
         assertEquals(true,result.first().articles.isNotEmpty())

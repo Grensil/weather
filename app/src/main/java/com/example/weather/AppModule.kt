@@ -2,7 +2,7 @@ package com.example.weather
 
 import com.example.data.LocalDataSource
 import com.example.data.MainRepositoryImpl
-import com.example.data.RemoteDataSource
+import com.example.data.RemoteDataSourceImpl
 import com.example.domain.MainRepository
 import com.example.domain.MainUseCaseImpl
 
@@ -12,12 +12,12 @@ class AppModule private constructor() {
         LocalDataSource()
     }
 
-    private val remoteDataSource: RemoteDataSource by lazy {
-        RemoteDataSource()
+    private val remoteDataSourceImpl: RemoteDataSourceImpl by lazy {
+        RemoteDataSourceImpl()
     }
 
     private val repository: MainRepository by lazy {
-        MainRepositoryImpl(localDataSource, remoteDataSource)
+        MainRepositoryImpl(localDataSource, remoteDataSourceImpl)
     }
 
     private val _useCase: MainUseCaseImpl by lazy {
