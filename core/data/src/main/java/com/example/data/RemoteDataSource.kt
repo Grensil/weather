@@ -1,6 +1,5 @@
 package com.example.data
 
-import android.util.Log
 import com.example.data.model.Article
 import com.example.data.model.HeadlineResponse
 import com.example.data.model.Source
@@ -11,7 +10,7 @@ import org.json.JSONObject
 class RemoteDataSource {
     private val httpClient by lazy { HttpClient() }
 
-   fun getHeadLineArticles(country: String, category: String): List<ArticleDto> {
+    fun getHeadLineArticles(country: String, category: String): List<ArticleDto> {
         val url = ApiConfig.buildTopHeadlinesUrl(country, category)
 
         try {
@@ -26,44 +25,66 @@ class RemoteDataSource {
             return parseResponse.articles.map { it.toArticleDto() }
 
         } catch (e: Exception) {
-            Log.e("NetworkError", "Full exception: $e")
             throw e
         }
     }
 
     fun parseHeadlineResponse(jsonString: String): HeadlineResponse {
-        val jsonObject = JSONObject(jsonString)
-
-        val status = jsonObject.getString("status")
-        val totalResults = jsonObject.getInt("totalResults")
-
-        val articlesArray = jsonObject.getJSONArray("articles")
-        val articles = mutableListOf<Article>()
-
-        for (i in 0 until articlesArray.length()) {
-            val articleJson = articlesArray.getJSONObject(i)
-            articles.add(parseArticle(articleJson))
-        }
+        val status = extractStringValue(jsonString, "status") ?: ""
+        val totalResults = extractIntValue(jsonString, "totalResults") ?: 0
+        val articles = parseArticlesArray(jsonString)
 
         return HeadlineResponse(status, totalResults, articles)
     }
 
-    private fun parseArticle(articleJson: JSONObject): Article {
-        val sourceJson = articleJson.getJSONObject("source")
-        val source = Source(
-            id = if (sourceJson.isNull("id")) null else sourceJson.getString("id"),
-            name = sourceJson.getString("name")
-        )
+    private fun parseArticlesArray(jsonString: String): List<Article> {
+        val articlesPattern = """"articles"\s*:\s*\[(.*)]""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        val articlesArrayContent = articlesPattern.find(jsonString)?.groupValues?.get(1) ?: return emptyList()
+        
+        val articles = mutableListOf<Article>()
+        val articlePattern = """\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}""".toRegex()
+        
+        articlePattern.findAll(articlesArrayContent).forEach { match ->
+            val articleJson = match.value
+            articles.add(parseArticle(articleJson))
+        }
+        
+        return articles
+    }
+
+    private fun parseArticle(articleJson: String): Article {
+        val sourceId = extractNestedStringValue(articleJson, "source", "id")
+        val sourceName = extractNestedStringValue(articleJson, "source", "name") ?: ""
+        val source = Source(id = sourceId, name = sourceName)
 
         return Article(
             source = source,
-            author = if (articleJson.isNull("author")) null else articleJson.getString("author"),
-            title = articleJson.getString("title"),
-            description = if (articleJson.isNull("description")) null else articleJson.getString("description"),
-            url = articleJson.getString("url"),
-            urlToImage = if (articleJson.isNull("urlToImage")) null else articleJson.getString("urlToImage"),
-            publishedAt = articleJson.getString("publishedAt"),
-            content = if (articleJson.isNull("content")) null else articleJson.getString("content")
+            author = extractStringValue(articleJson, "author"),
+            title = extractStringValue(articleJson, "title") ?: "",
+            description = extractStringValue(articleJson, "description"),
+            url = extractStringValue(articleJson, "url") ?: "",
+            urlToImage = extractStringValue(articleJson, "urlToImage"),
+            publishedAt = extractStringValue(articleJson, "publishedAt") ?: "",
+            content = extractStringValue(articleJson, "content")
         )
+    }
+
+    private fun extractStringValue(json: String, key: String): String? {
+        val pattern = """"$key"\s*:\s*"([^"]*)"""".toRegex()
+        val match = pattern.find(json)
+        return match?.groupValues?.get(1)?.takeIf { it.isNotEmpty() }
+    }
+
+    private fun extractIntValue(json: String, key: String): Int? {
+        val pattern = """"$key"\s*:\s*(\d+)""".toRegex()
+        val match = pattern.find(json)
+        return match?.groupValues?.get(1)?.toIntOrNull()
+    }
+
+    private fun extractNestedStringValue(json: String, parentKey: String, childKey: String): String? {
+        val parentPattern = """"$parentKey"\s*:\s*\{([^}]*)\}""".toRegex()
+        val parentMatch = parentPattern.find(json) ?: return null
+        val parentContent = parentMatch.groupValues[1]
+        return extractStringValue(parentContent, childKey)
     }
 }

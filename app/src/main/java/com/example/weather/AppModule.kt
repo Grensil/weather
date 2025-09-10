@@ -4,7 +4,7 @@ import com.example.data.LocalDataSource
 import com.example.data.MainRepositoryImpl
 import com.example.data.RemoteDataSource
 import com.example.domain.MainRepository
-import com.example.domain.MainUseCase
+import com.example.domain.MainUseCaseImpl
 
 class AppModule private constructor() {
 
@@ -20,11 +20,11 @@ class AppModule private constructor() {
         MainRepositoryImpl(localDataSource, remoteDataSource)
     }
 
-    private val _useCase: MainUseCase by lazy {
-        MainUseCase(repository)
+    private val _useCase: MainUseCaseImpl by lazy {
+        MainUseCaseImpl(repository)
     }
 
-    fun getUseCase(): MainUseCase = _useCase
+    fun getUseCase(): MainUseCaseImpl = _useCase
 
     companion object {
         @Volatile
