@@ -45,7 +45,7 @@ fun MainNavGraph(navController: NavHostController) {
 
         composable(route = MainRoute.BookmarkScreen.route) { backStackEntry ->
             val bookmarkViewModel = viewModel<BookmarkViewModel>(viewModelStoreOwner = backStackEntry,
-                factory = createViewModelFactory { BookmarkViewModel() }
+                factory = createViewModelFactory { BookmarkViewModel(appModules.getUseCase()) }
             )
             BookmarkScreen(viewModel = bookmarkViewModel)
         }

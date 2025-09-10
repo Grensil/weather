@@ -13,6 +13,8 @@ interface MainUseCase {
 class MainUseCaseImpl(private val repository : MainRepository) : MainUseCase {
 
     override suspend operator fun invoke(country: String, category: String) : Flow<List<ArticleDto>> {
+        require(country.isNotBlank()) { "country is empty" }
+        require(category.isNotBlank()) { "category is empty" }
         return repository.getTopHeadlines(country, category)
     }
 
