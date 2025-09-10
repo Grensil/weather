@@ -1,6 +1,8 @@
 package com.example.data
 
 import com.example.data.model.HeadlineResponse
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
@@ -149,5 +151,14 @@ class RemoteDataSourceTest {
         assertEquals("", result.status)
         assertEquals(0, result.totalResults)
         assertTrue("빈 배열이어야 함", result.articles.isEmpty())
+    }
+
+    @Test
+    fun `정상적인_아티클_리스트가_응답된다`() = runBlocking {
+        //Given
+        val result = remoteDataSource.getHeadLineArticles(country = "us", category = "business")
+
+        println("result : ${result.first()}")
+        assertEquals(true,result.first().articles.isNotEmpty())
     }
 }

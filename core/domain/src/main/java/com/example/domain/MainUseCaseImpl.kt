@@ -1,12 +1,14 @@
 package com.example.domain
 
+import kotlinx.coroutines.flow.Flow
+
 interface MainUseCase {
-    suspend fun getTopHeadlines(country: String, category: String): List<ArticleDto>
+    suspend operator fun invoke(country: String, category: String): Flow<List<ArticleDto>>
 }
 
 class MainUseCaseImpl(private val repository : MainRepository) : MainUseCase {
 
-    override suspend fun getTopHeadlines(country: String, category: String) : List<ArticleDto> {
-        return repository.getTopHeadlines(country,category)
+    override suspend operator fun invoke(country: String, category: String) : Flow<List<ArticleDto>> {
+        return repository.getTopHeadlines(country, category)
     }
 }

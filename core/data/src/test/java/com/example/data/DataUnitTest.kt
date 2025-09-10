@@ -1,10 +1,14 @@
 package com.example.data
 
 import junit.framework.TestCase.assertTrue
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 import org.junit.Before
+import kotlin.collections.first
 
 /**
  * Example local unit test, which will execute on the development machine (host).
@@ -25,11 +29,11 @@ class DataUnitTest {
     }
 
     @Test
-    fun Article_List_IsValidated() = runBlocking {
-        var response = repository.getTopHeadlines(country = "us", category = "business")
-        println(response.size)
-        response.forEach { println("${it}") }
+    fun `아티클_리스트_요청_테스트`() = runBlocking {
+        val result = repository.getTopHeadlines("us", "business")
 
-        assertTrue("article existed", response.size>0)
+        // Then
+        assertTrue("결과가 비어있지 않아야 함", result.first().isNotEmpty())
+
     }
 }

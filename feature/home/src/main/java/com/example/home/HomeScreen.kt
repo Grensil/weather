@@ -10,7 +10,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -21,15 +20,13 @@ import com.example.domain.ArticleDto
 import com.example.domain.MainRepository
 import com.example.domain.MainUseCaseImpl
 import com.example.home.component.ArticleItem
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel) {
 
     val articles = viewModel.articles.collectAsStateWithLifecycle()
-
-    LaunchedEffect(Unit) {
-        viewModel.getTopHeadlines(country = "us", category = "business")
-    }
 
     Scaffold(topBar = {
         Row(
@@ -73,7 +70,7 @@ class FakeRepository : MainRepository {
     override suspend fun getTopHeadlines(
         country: String,
         category: String
-    ): List<ArticleDto> {
-        return fakeArticle
+    ): Flow<List<ArticleDto>> = flow {
+        emit(fakeArticle)
     }
 }

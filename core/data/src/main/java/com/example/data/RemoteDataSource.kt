@@ -5,12 +5,16 @@ import com.example.data.model.HeadlineResponse
 import com.example.data.model.Source
 import com.example.domain.ArticleDto
 import com.grensil.network.HttpClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import org.json.JSONObject
 
 class RemoteDataSource {
     private val httpClient by lazy { HttpClient() }
 
-    fun getHeadLineArticles(country: String, category: String): List<ArticleDto> {
+    fun getHeadLineArticles(country: String, category: String): Flow<HeadlineResponse> = flow {
         val url = ApiConfig.buildTopHeadlinesUrl(country, category)
 
         try {
@@ -21,13 +25,13 @@ class RemoteDataSource {
                 "Accept" to "application/json", "User-Agent" to "NHN-Assignment-App/1.0"
             )
             val response = httpClient.get(url, headers, 30000)
-            val parseResponse = parseHeadlineResponse(response.body)
-            return parseResponse.articles.map { it.toArticleDto() }
+            val headlineResponse = parseHeadlineResponse(response.body)
+            emit(headlineResponse)
 
         } catch (e: Exception) {
             throw e
         }
-    }
+    }.flowOn(Dispatchers.IO)
 
     fun parseHeadlineResponse(jsonString: String): HeadlineResponse {
         val status = extractStringValue(jsonString, "status") ?: ""
