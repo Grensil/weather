@@ -4,12 +4,14 @@ import com.example.data.model.HeadlineResponse
 import com.example.data.model.Source
 import com.example.domain.ArticleDto
 import com.example.domain.MainRepository
+import com.example.domain.SourceDto
 import junit.framework.TestCase.assertEquals
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.junit.Before
@@ -70,23 +72,44 @@ class MockRepository(private val localDataSource: LocalDataSource, private val r
         country: String,
         category: String
     ): Flow<List<ArticleDto>> {
-
         return withContext(Dispatchers.IO) {
             val local = localDataSource.getFavoriteList()
-            val remote = remoteDataSourceImpl.getHeadLineArticles(country,category)
+            val remote = remoteDataSourceImpl.getHeadLineArticles(country, category)
 
             combine(local, remote) { localList, remoteList ->
-                val result = remoteList.articles.map { article ->
+                remoteList.articles.map { article ->
                     val articleDto = article.toArticleDto()
                     val isBookmarked = localList.any { favoriteSource ->
                         favoriteSource.name == article.source.name &&
-                                favoriteSource.id == article.source.id
+                        favoriteSource.id == article.source.id
                     }
                     articleDto.copy(bookmarked = isBookmarked)
                 }
-                result
             }
         }
+    }
+
+    override suspend fun getFavoriteList(): Flow<Set<SourceDto>> {
+        return localDataSource.getFavoriteList().map { sourceSet ->
+            sourceSet.map { source ->
+                SourceDto(id = source.id, name = source.name)
+            }.toSet()
+        }
+    }
+
+    override fun addFavorite(source: SourceDto) {
+        val sourceEntity = Source(id = source.id, name = source.name)
+        localDataSource.addFavorite(sourceEntity)
+    }
+
+    override fun removeFavorite(source: SourceDto) {
+        val sourceEntity = Source(id = source.id, name = source.name)
+        localDataSource.removeFavorite(sourceEntity)
+    }
+
+    override fun isBookmarked(source: SourceDto): Boolean {
+        val sourceEntity = Source(id = source.id, name = source.name)
+        return localDataSource.isBookmarked(sourceEntity)
     }
 }
 

@@ -1,6 +1,7 @@
 package com.example.data
 
 import com.example.data.model.Article
+import com.example.data.model.Source
 import com.example.domain.ArticleDto
 import com.example.domain.SourceDto
 
@@ -15,4 +16,8 @@ fun Article.toArticleDto(): ArticleDto {
         publishedAt = this.publishedAt,
         content = this.content
     )
+}
+
+fun SourceDto.toSourceEntity() : Source {
+    return Source(id = this.id, name = this.name)
 }

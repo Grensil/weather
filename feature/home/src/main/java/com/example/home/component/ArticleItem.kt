@@ -2,6 +2,7 @@ package com.example.home.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,58 +34,99 @@ import com.example.domain.ArticleDto
 import com.example.domain.SourceDto
 
 @Composable
-fun ArticleItem(item: ArticleDto) {
-    Column(modifier = Modifier.fillMaxWidth().wrapContentWidth().background(Color.LightGray,
-        RoundedCornerShape(12.dp)
-    ).padding(12.dp)) {
+fun ArticleItem(item: ArticleDto, bookmarkOnClick: ((Boolean) -> Unit)? = null) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .wrapContentWidth()
+            .background(
+                Color.LightGray,
+                RoundedCornerShape(12.dp)
+            )
+            .padding(12.dp)
+    ) {
 
-        if(!item.author.isNullOrEmpty()) {
-            Text(text = item.author?:"",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (!item.author.isNullOrEmpty()) {
+                Text(modifier = Modifier.weight(1f),
+                    text = item.author ?: "",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
+                )
+
+                Spacer(modifier = Modifier
+                    .width(12.dp))
+            }
+            else {
+                Spacer(modifier = Modifier.weight(1f))
+            }
+
+            Image(
+                imageVector = if (item.bookmarked) Icons.Default.Favorite
+                else Icons.Default.FavoriteBorder, contentDescription = "bookmark status",
+                modifier = Modifier.clickable {
+                    bookmarkOnClick?.invoke(item.bookmarked)
+                })
         }
 
-        Text(text = "${item.title}",
+        Spacer(modifier = Modifier
+            .height(10.dp)
+            .fillMaxWidth())
+
+        Text(
+            text = "${item.title}",
             fontSize = 20.sp,
             fontWeight = FontWeight.SemiBold,
             maxLines = 2,
-            overflow = TextOverflow.Ellipsis)
+            overflow = TextOverflow.Ellipsis
+        )
 
-        Spacer(modifier = Modifier.height(12.dp).fillMaxWidth())
+        Spacer(modifier = Modifier
+            .height(12.dp)
+            .fillMaxWidth())
 
         Row(verticalAlignment = Alignment.CenterVertically) {
 
-            if(!item.urlToImage.isNullOrEmpty()) {
-                AsyncImage(modifier = Modifier.size(120.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(Color.DarkGray),
+            if (!item.urlToImage.isNullOrEmpty()) {
+                AsyncImage(
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(Color.DarkGray),
                     model = item.urlToImage,
                     contentScale = ContentScale.Crop,
-                    contentDescription = "article image")
+                    contentDescription = "article image"
+                )
 
                 Spacer(modifier = Modifier.width(12.dp))
             }
 
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.Top) {
 
-                if(!item.content.isNullOrEmpty()) {
-                    Text(text = "${item.content}",
+                if (!item.content.isNullOrEmpty()) {
+                    Text(
+                        text = "${item.content}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Normal,
                         maxLines = 3,
-                        overflow = TextOverflow.Ellipsis)
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                    Spacer(modifier = Modifier.height(12.dp).fillMaxWidth())
+                    Spacer(modifier = Modifier
+                        .height(12.dp)
+                        .fillMaxWidth())
                 }
 
-                if(!item.description.isNullOrEmpty()) {
-                    Text(text = "${item.description}",
+                if (!item.description.isNullOrEmpty()) {
+                    Text(
+                        text = "${item.description}",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Normal,
                         maxLines = 2,
-                        overflow = TextOverflow.Ellipsis)
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
             }
         }

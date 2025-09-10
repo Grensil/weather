@@ -14,5 +14,5 @@ data class ArticleDto(
     val urlToImage: String? = null,
     val publishedAt: String? = null,
     val content: String? = null,
-    val bookmarked : Boolean? = null
+    val bookmarked : Boolean = false
 )
