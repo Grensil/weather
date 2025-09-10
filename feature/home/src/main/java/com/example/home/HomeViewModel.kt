@@ -26,7 +26,6 @@ class HomeViewModel(private val useCase: MainUseCase) : ViewModel() {
             useCase(country, category)
                 .distinctUntilChanged()
                 .collect { articleList ->
-                    Log.d("Logd","articleList ${articleList}")
                     _articles.value = articleList
                 }
         } catch (_: Exception) {

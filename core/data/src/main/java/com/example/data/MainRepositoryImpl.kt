@@ -24,10 +24,7 @@ class MainRepositoryImpl(
             combine(local, remote) { localList, remoteList ->
                 remoteList.articles.map { article ->
                     val articleDto = article.toArticleDto()
-                    val isBookmarked = localList.any { favoriteSource ->
-                        favoriteSource.name == article.source.name &&
-                        favoriteSource.id == article.source.id
-                    }
+                    val isBookmarked = localDataSource.isBookmarked(article.source)
                     articleDto.copy(bookmarked = isBookmarked)
                 }
             }
@@ -37,7 +34,7 @@ class MainRepositoryImpl(
     override suspend fun getFavoriteList(): Flow<Set<SourceDto>> {
         return localDataSource.getFavoriteList().map { sourceSet ->
             sourceSet.map { source ->
-                SourceDto(id = source.id, name = source.name)
+                SourceDto(id = source.key.id, name = source.key.name)
             }.toSet()
         }
     }
