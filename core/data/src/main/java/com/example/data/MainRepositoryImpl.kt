@@ -34,20 +34,23 @@ class MainRepositoryImpl(
     override suspend fun getFavoriteList(): Flow<Set<SourceDto>> {
         return localDataSource.getFavoriteList().map { sourceSet ->
             sourceSet.map { source ->
-                SourceDto(id = source.key.id, name = source.key.name)
+                SourceDto(id = source.id, name = source.name)
             }.toSet()
         }
     }
 
     override fun addFavorite(source: SourceDto) {
-        localDataSource.addFavorite(source.toSourceEntity())
+        val sourceEntity = Source(id = source.id, name = source.name)
+        localDataSource.addFavorite(sourceEntity)
     }
 
     override fun removeFavorite(source: SourceDto) {
-        localDataSource.removeFavorite(source.toSourceEntity())
+        val sourceEntity = Source(id = source.id, name = source.name)
+        localDataSource.removeFavorite(sourceEntity)
     }
 
     override fun isBookmarked(source: SourceDto): Boolean {
-        return localDataSource.isBookmarked(source.toSourceEntity())
+        val sourceEntity = Source(id = source.id, name = source.name)
+        return localDataSource.isBookmarked(sourceEntity)
     }
 }
